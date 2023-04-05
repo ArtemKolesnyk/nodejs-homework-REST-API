@@ -1,8 +1,21 @@
 const { Contact } = require("../models/contacts");
 
 const getContactsAll = async (req, res) => {
-  const allContacts = await Contact.find();
-  res.status(200).json(allContacts);
+  const { id: owner } = req.user;
+  const { page = 1, limit = 20, favorite } = req.query;
+  const skip = (page - 1) * limit;
+
+  const allContacts = await Contact.find({ owner })
+    .limit(Number(limit))
+    .skip(Number(skip));
+  if (!favorite) {
+    res.status(200).json(allContacts);
+  } else {
+    const favoriteContacts = allContacts.filter(
+      (contact) => contact.favorite.toString() === favorite
+    );
+    res.status(200).json(favoriteContacts);
+  }
 };
 
 const getContactById = async (req, res) => {
@@ -18,8 +31,9 @@ const getContactById = async (req, res) => {
 
 const addContact = async (req, res) => {
   const { name, email, phone } = req.body;
+  const { id: owner } = req.user;
 
-  const newContact = await Contact.create({ name, email, phone });
+  const newContact = await Contact.create({ name, email, phone, owner });
   console.log("NewContact", newContact);
   res.status(201).json(newContact);
 };
