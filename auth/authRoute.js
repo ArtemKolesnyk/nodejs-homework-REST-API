@@ -6,6 +6,9 @@ const {
   logout,
   userInfo,
   upSubscription,
+  upAvatar,
+  verifyEmail,
+  repeatVerifyEmail,
 } = require("../auth/authControler");
 const {
   authUser,
@@ -13,6 +16,7 @@ const {
 } = require("../validation/validationSchemasUser");
 const { validateAuth } = require("../auth/valideteAuth");
 const { validateToken } = require("../auth/validateToken");
+const { upload } = require("../middlewares/uploadAvatar");
 
 const authRouter = express.Router();
 
@@ -34,6 +38,14 @@ authRouter.patch(
   validateAuth(upUserSubscription),
   tryCatchWrapper(upSubscription)
 );
+authRouter.patch(
+  "avatars",
+  tryCatchWrapper(validateToken),
+  upload.single("avatar"),
+  tryCatchWrapper(upAvatar)
+);
+authRouter.get("/verify/:verificationToken", tryCatchWrapper(verifyEmail));
+authRouter.post("/verify", tryCatchWrapper(repeatVerifyEmail));
 
 module.exports = {
   authRouter,
